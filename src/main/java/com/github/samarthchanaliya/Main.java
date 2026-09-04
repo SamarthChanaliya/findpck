@@ -17,7 +17,7 @@ import java.util.concurrent.Callable;
 public class Main implements Callable<Integer> {
 
     @Parameters(index = "0",description = "The package name or keyword to search for.")
-    private String quarry;
+    private String query;
 
     @Option(names = {"-l","--limit"}, description = "Number of results to display (default: 3).", defaultValue = "3")
     private int limit;
@@ -26,16 +26,16 @@ public class Main implements Callable<Integer> {
     public Integer call() throws Exception {
 
         SearchService service = new SearchService();
-        Optional<SearchResponse> results = service.searchDocs(quarry, limit);
+        Optional<SearchResponse> results = service.searchDocs(query, limit);
         if (results.isEmpty() || results.get().response().docs().isEmpty()){
-            System.out.println("No packages found for: " + quarry);
+            System.out.println("No packages found for: " + query);
             return 0;
         }
 
         int resultCount = results.get().response().numFound();
         List<SearchResponse.ArtifactDoc> docs = results.get().response().docs();
 
-        System.out.printf("Found %d packages matching \"%s\" (showing top %d)%n%n",resultCount,quarry,limit);
+        System.out.printf("Found %d packages matching \"%s\" (showing top %d)%n%n",resultCount, query,limit);
 
         int index = 0;
         for (SearchResponse.ArtifactDoc doc : docs){
@@ -47,7 +47,7 @@ public class Main implements Callable<Integer> {
         return 0;
     }
 
-    public static void main(String[] args) throws Exception{
+    public static void main(String[] args){
         int exitCode = new CommandLine(new Main()).execute(args);
         System.exit(exitCode);
     }
