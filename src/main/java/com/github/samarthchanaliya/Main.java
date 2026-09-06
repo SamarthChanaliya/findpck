@@ -22,6 +22,15 @@ public class Main implements Callable<Integer> {
     @Option(names = {"-l","--limit"}, description = "Number of results to display (default: 3).", defaultValue = "3")
     private int limit;
 
+    @Option(names = {"-c", "--copy"}, description = "Copy dependency snippet to clipboard (default: top result).")
+    private boolean copy;
+
+    @Option(names = {"--copy-index"}, description = "Index of the result to copy (1-based, default: 1).")
+    private Integer copyIndex;
+
+    @Option(names = {"-f", "--format"}, description = "Format to copy: 'gradle' (default) or 'maven'.", defaultValue = "gradle")
+    private String format;
+
     @Override
     public Integer call() throws Exception {
 
@@ -42,6 +51,31 @@ public class Main implements Callable<Integer> {
             index ++;
             String card = DependencyFormatter.formatCard(index,doc);
             System.out.println(card);
+        }
+
+        if (copy || copyIndex != null) {
+            int targetIndex = (copyIndex != null) ? copyIndex : 1;
+            if (targetIndex < 1 || targetIndex > docs.size()) {
+                System.err.printf("Cannot copy result #%d: index out of range (1 - %d)%n", targetIndex, docs.size());
+            } else {
+                SearchResponse.ArtifactDoc targetDoc = docs.get(targetIndex - 1);
+                String snippet;
+                String formatLabel;
+                if ("maven".equalsIgnoreCase(format) || "mvn".equalsIgnoreCase(format)) {
+                    snippet = DependencyFormatter.formatMaven(targetDoc);
+                    formatLabel = "Maven";
+                } else {
+                    snippet = DependencyFormatter.formatGradle(targetDoc);
+                    formatLabel = "Gradle";
+                }
+
+                if (ClipboardUtil.copy(snippet)) {
+                    System.out.printf("Copied %s dependency for %s:%s to clipboard!%n",
+                            formatLabel, targetDoc.groupId(), targetDoc.artifactId());
+                } else {
+                    System.err.println("Failed to copy to clipboard.");
+                }
+            }
         }
 
         return 0;

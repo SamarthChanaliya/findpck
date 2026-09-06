@@ -17,9 +17,9 @@ public class SearchService {
     private final HttpClient client = HttpClient.newHttpClient();
     private final ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-    public Optional<SearchResponse> searchDocs(String quarry, int rows) throws Exception{
-        String encodedQuarry = URLEncoder.encode(quarry, StandardCharsets.UTF_8);
-        String endpoint = String.format("%s?q=%s&rows=%d&wt=json", BASE_URL,encodedQuarry,rows);
+    public Optional<SearchResponse> searchDocs(String query, int rows) throws Exception{
+        String encodedQuery = URLEncoder.encode(query, StandardCharsets.UTF_8);
+        String endpoint = String.format("%s?q=%s&rows=%d&wt=json", BASE_URL,encodedQuery,rows);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(endpoint))
                 .GET()
